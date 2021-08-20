@@ -35,6 +35,41 @@
                 "language": "memeasm",
                 "path": "./snippets/snippets.code-snippets"
             }
+        ],
+        "debuggers": [
+            {
+                "linux": {
+                    "type": "memeasm.gdb.debug",
+                    "label": "Debug MemeAssembly using GDB",
+                    "runtime": "node",
+                    "program": "./debugger/gdb.js",
+                    "configurationAttributes": {
+                        "launch": {
+                            "required": "target"
+                        },
+                        "properties": {
+                            "target": {
+                                "type": "string",
+                                "description": "Path of executable"
+                            },
+                            "gdbpath": {
+                                "type": "string",
+                                "description": "Path to the gdb executable or the command if in PATH",
+                                "default": "gdb"
+                            }
+                        }
+                    },
+                    "initialConfigurations": [
+                        {
+                            "name": "Debug MemeAssembly",
+                            "type": "gdb",
+                            "request": "launch",
+                            "target": "${fileDirname}/main",
+                            "cwd": "${fileDirname}"
+                        }
+                    ]
+                }
+            }
         ]
     }
 }
