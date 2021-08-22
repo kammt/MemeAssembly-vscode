@@ -58,36 +58,33 @@ export class HoverProvider implements vscode.HoverProvider {
         }
 
 
-        var possibleTokens = tokenized.tokens.filter((t: IToken) => {
+        var hoveredTokenIndex = tokenized.tokens.findIndex((t: IToken) => {
             return t.startIndex <= position.character && t.endIndex > position.character;
         });
-        if (possibleTokens.length === 0) {
+        if (hoveredTokenIndex < 0) {
             return;
         }
 
-        console.log(possibleTokens)
+        // Now search left for tokens on the same level (skipping lower ones)
+        var currentTokenLength = tokenized.tokens[hoveredTokenIndex].scopes.length;
+        var l = hoveredTokenIndex;
+        while (l > 0 && tokenized.tokens[l - 1].scopes.length >= currentTokenLength || tokenized.tokens[l - 1].scopes.length === 1) {
+            l--;
+        }
 
-        // TODO: Maybe find only tokens with same scopes length as the one at position
-        // Now find all tokens with entity.name.function scope and find the min/max index
-        var funcTokens = possibleTokens.filter((t: IToken) => {
-            return !t.scopes.includes("entity.name.function")
-        })
+        var r = hoveredTokenIndex;
+        while (r < tokenized.tokens.length - 1 && (tokenized.tokens[r + 1].scopes.length >= currentTokenLength || tokenized.tokens[r + 1].scopes.length === 1)) {
+            r++;
+        }
 
-        var tokenStart = line.firstNonWhitespaceCharacterIndex, tokenEnd = line.text.length;
-        funcTokens.forEach((t: IToken) => {
-            if (t.startIndex > tokenStart) {
-                tokenStart = t.startIndex;
-            }
-            if (t.endIndex > tokenEnd) {
-                tokenEnd = t.endIndex;
-            }
-        })
+        var start = tokenized.tokens[l].startIndex;
+        var end = tokenized.tokens[r].endIndex;
 
         var tokenRange = new vscode.Range(
-            new vscode.Position(position.line, tokenStart),
-            new vscode.Position(position.line, tokenEnd));
+            new vscode.Position(position.line, start),
+            new vscode.Position(position.line, end));
 
 
-        return new Hover(line.text.substring(tokenStart, tokenEnd), tokenRange);
+        return new Hover(line.text.substring(start, end), tokenRange);
     }
 }
